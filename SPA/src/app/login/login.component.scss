@@ -1,0 +1,13 @@
+.form-login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding-top: 30px;
+
+    .form-column {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
