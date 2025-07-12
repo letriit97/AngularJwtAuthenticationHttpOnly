@@ -192,7 +192,7 @@ namespace API._Services
             context.Response.Cookies.Append("X-Access-Token", tokenDto.AccessToken,
             new CookieOptions
             {
-                Expires = DateTime.UtcNow.AddMinutes(5),
+                Expires = DateTime.Now.AddMinutes(5),
                 HttpOnly = true,
                 IsEssential = true,
                 Secure = true,
@@ -201,7 +201,7 @@ namespace API._Services
             context.Response.Cookies.Append("X-Refresh-Token", tokenDto.RefreshToken,
             new CookieOptions
             {
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.Now.AddDays(7),
                 HttpOnly = true,
                 IsEssential = true,
                 Secure = true,
@@ -221,7 +221,7 @@ namespace API._Services
                 UserName = account.UserName,
                 Token = tokenDto.RefreshToken,
                 CreatedTime = DateTime.Now,
-                ExpiredTime = DateTime.UtcNow.AddDays(7)
+                ExpiredTime = DateTime.Now.AddDays(7)
             };
 
             _context.RefreshToken.Add(refreshToken);
