@@ -113,7 +113,6 @@ namespace API._Services
 
         Task RevokeToken(string userName);
 
-        void SetTokensInsideCookie(TokenDto tokenDto, HttpContext context);
         void RemoveTokenInCookie(HttpContext context);
     }
 
@@ -187,27 +186,7 @@ namespace API._Services
             throw new NotImplementedException();
         }
 
-        public void SetTokensInsideCookie(TokenDto tokenDto, HttpContext context)
-        {
-            context.Response.Cookies.Append("X-Access-Token", tokenDto.AccessToken,
-            new CookieOptions
-            {
-                Expires = DateTime.Now.AddMinutes(5),
-                HttpOnly = true,
-                IsEssential = true,
-                Secure = true,
-                SameSite = SameSiteMode.None
-            });
-            context.Response.Cookies.Append("X-Refresh-Token", tokenDto.RefreshToken,
-            new CookieOptions
-            {
-                Expires = DateTime.Now.AddDays(7),
-                HttpOnly = true,
-                IsEssential = true,
-                Secure = true,
-                SameSite = SameSiteMode.None
-            });
-        }
+       
 
         public async Task<AuthenticationResponse> ValidateUser(AccountDto user)
         {

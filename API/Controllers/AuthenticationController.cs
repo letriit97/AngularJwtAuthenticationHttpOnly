@@ -1,5 +1,6 @@
 using API._Services;
 using API.Models;
+using API.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,7 +25,7 @@ namespace API.Controllers
             if (!result.IsAuthSuccessfully)
                 return Unauthorized();
 
-            _services.SetTokensInsideCookie(result.Token, HttpContext);
+            JwtCookiesSecurity.SetTokensInsideCookie(result.Token.AccessToken, result.Token.RefreshToken, HttpContext);
             return Ok(result);
         }
 
@@ -49,8 +50,8 @@ namespace API.Controllers
 
             if (!tokenDtoToReturn.IsSuccess)
                 return Unauthorized(tokenDtoToReturn.Message);
-
-            _services.SetTokensInsideCookie(tokenDtoToReturn.Token, HttpContext);
+                
+            JwtCookiesSecurity.SetTokensInsideCookie(tokenDtoToReturn.Token.AccessToken, tokenDtoToReturn.Token.RefreshToken, HttpContext);
             return Ok();
         }
     }
