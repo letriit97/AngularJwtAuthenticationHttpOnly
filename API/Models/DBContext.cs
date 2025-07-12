@@ -15,10 +15,12 @@ namespace API.Models
         }
 
         public virtual DbSet<Accounts> Accounts { get; set; }
+        public virtual DbSet<RefreshToken> RefreshToken { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Accounts>().HasKey(x => x.UserName);
+            modelBuilder.Entity<RefreshToken>().HasKey(x => new { x.UserName, x.Token });
 
             modelBuilder.Seeding();
         }

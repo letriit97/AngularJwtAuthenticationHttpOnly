@@ -14,6 +14,19 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSliderModule } from '@angular/material/slider';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
+
+
+import { MAT_SNACK_BAR_DEFAULT_OPTIONS, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSelectModule } from '@angular/material/select';
+
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatListModule } from '@angular/material/list';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { JwtCookiesInterceptor } from './services/jwt.cookies.httponly.interceptor';
 
 @NgModule({
   declarations: [
@@ -26,6 +39,8 @@ import { MatSliderModule } from '@angular/material/slider';
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
+    HttpClientModule,
+    FormsModule,
 
     MatCardModule,
     MatButtonModule,
@@ -33,8 +48,23 @@ import { MatSliderModule } from '@angular/material/slider';
     MatIconModule,
     MatFormFieldModule,
     MatSliderModule,
+    MatSnackBarModule,
+    MatProgressBarModule,
+    MatSelectModule,
+    MatSidenavModule,
+    MatDividerModule,
+    MatListModule,
+    MatToolbarModule,
+
   ],
-  providers: [],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: JwtCookiesInterceptor,
+      multi: true
+    },
+    { provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: { duration: 2500 } }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

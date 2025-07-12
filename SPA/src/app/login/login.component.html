@@ -1,20 +1,22 @@
-<div class="form-login">
+<form #form="ngForm" class="form-login" (ngSubmit)="login()">
 
     <mat-card>
+        <mat-card-title> Security Login Authenticaion Cookies With HttpOnly</mat-card-title>
         <div class="form-column">
-            <mat-form-field appearance="fill">
+            <mat-form-field appearance="fill" class="w-full">
                 <mat-label>Tài khoản</mat-label>
-                <input matInput>
+  
+                <input type="text" matInput name="userName" [(ngModel)]="request.userName" required />
             </mat-form-field>
             
             <mat-form-field appearance="fill">
                 <mat-label>Mật khẩu </mat-label>
-                <input matInput>
+                <input type="password" matInput name="password" [(ngModel)]="request.password">
             </mat-form-field>
         </div>
 
-        <button mat-raised-button color="primary" (click)="login()">
+        <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid">
             Đăng nhập
         </button>
     </mat-card>
-</div>
+</form>

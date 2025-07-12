@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using API._Services;
 using API.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -27,21 +23,34 @@ namespace API.Controllers
             var result = await _services.ValidateUser(user);
             if (!result.IsAuthSuccessfully)
                 return Unauthorized();
+
+            _services.SetTokensInsideCookie(result.Token, HttpContext);
             return Ok(result);
         }
 
+
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            // Xoá cookies
+            _services.RemoveTokenInCookie(HttpContext);
+            return Ok();
+        }
 
 
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh()
         {
-            HttpContext.Request.Cookies.TryGetValue("accessToken", out var accessToken);
-            HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken);
-            
+            HttpContext.Request.Cookies.TryGetValue("X-Access-Token", out var accessToken);
+            HttpContext.Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken);
+
             var tokenDto = new TokenDto(accessToken, refreshToken);
             var tokenDtoToReturn = await _services.RefreshToken(tokenDto);
-            _services.SetTokensInsideCookie(tokenDtoToReturn, HttpContext);
 
+            if (!tokenDtoToReturn.IsSuccess)
+                return Unauthorized(tokenDtoToReturn.Message);
+
+            _services.SetTokensInsideCookie(tokenDtoToReturn.Token, HttpContext);
             return Ok();
         }
     }

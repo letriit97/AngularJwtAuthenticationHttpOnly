@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
+//================ CORS ================
+builder.Services.AddCors();
 
 builder.Services.AddDbContext<DBContext>(options => options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 // Add services to the container.
@@ -15,9 +17,14 @@ builder.Services.AddDbContext<DBContext>(options => options.UseSqlServer(configu
 var jwtSetting = configuration.GetSection("JwtSettings");
 
 builder.Services
-    .AddAuthentication(x => {
+    .AddAuthentication(x =>
+    {
         x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    }
+    ).AddCookie(x =>
+    {
+        x.Cookie.Name = "Cookies";
     })
     .AddJwtBearer(options =>
     {
@@ -35,7 +42,7 @@ builder.Services
         {
             OnMessageReceived = x =>
             {
-                x.Request.Cookies.TryGetValue("accessToken", out var accessToken);
+                x.Request.Cookies.TryGetValue("X-Access-Token", out var accessToken);
                 if (!string.IsNullOrEmpty(accessToken))
                     x.Token = accessToken;
                 return Task.CompletedTask;
@@ -61,8 +68,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
+
 app.UseHttpsRedirection();
 
+//================ CORS ================
+app.UseCors(x => x
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .SetIsOriginAllowed(origin => true) // allow any origin
+                .AllowCredentials()); // allow credentials
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

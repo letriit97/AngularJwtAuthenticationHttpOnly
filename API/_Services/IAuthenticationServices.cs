@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.Intrinsics.X86;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -18,6 +19,31 @@ namespace API._Services
         public TokenDto Token { get; set; }
     }
 
+    public class RefreshTokenResponse
+    {
+        public bool IsSuccess { get; set; }
+
+
+
+        public string Message { get; set; }
+        public TokenDto Token { get; set; }
+
+        public RefreshTokenResponse(bool isSuccess, string message = null)
+        {
+            IsSuccess = isSuccess;
+            Message = message;
+        }
+
+        public RefreshTokenResponse()
+        {
+
+        }
+
+        public RefreshTokenResponse(TokenDto token)
+        {
+            Token = token;
+        }
+    }
     public class JwtHandler
     {
         private readonly IConfiguration _configuration;
@@ -41,11 +67,9 @@ namespace API._Services
         public string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
-            using (var rrg = RandomNumberGenerator.Create())
-            {
-                rrg.GetBytes(randomNumber);
-                return Convert.ToBase64String(randomNumber);
-            }
+            using var rrg = RandomNumberGenerator.Create();
+            rrg.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
 
 
@@ -60,7 +84,7 @@ namespace API._Services
         private List<Claim> GetClaims(Accounts user)
         {
             var claims = new List<Claim>(){
-                new Claim(ClaimTypes.Name, user.UserName )
+                new (ClaimTypes.Name, user.UserName )
             };
 
             return claims;
@@ -85,8 +109,12 @@ namespace API._Services
     {
         Task<AuthenticationResponse> ValidateUser(AccountDto user);
         TokenDto CreateToken(Accounts user, bool populateExp);
-        Task<TokenDto> RefreshToken(TokenDto tokenDto);
+        Task<RefreshTokenResponse> RefreshToken(TokenDto tokenDto);
+
+        Task RevokeToken(string userName);
+
         void SetTokensInsideCookie(TokenDto tokenDto, HttpContext context);
+        void RemoveTokenInCookie(HttpContext context);
     }
 
     public class AuthenticationService : IAuthenticationServices
@@ -110,36 +138,70 @@ namespace API._Services
             return token;
         }
 
-        public async Task<TokenDto> RefreshToken(TokenDto tokenDto)
+        public async Task<RefreshTokenResponse> RefreshToken(TokenDto tokenDto)
         {
+            var account = new Accounts();
+            // Nếu có Access Token 
+            if (string.IsNullOrWhiteSpace(tokenDto.AccessToken))
+            {
+                // Lấy thông tin từ refresh Token
+                var refr = await _context.RefreshToken.FirstOrDefaultAsync(x => x.Token == tokenDto.RefreshToken);
+                if (refr == null || refr.ExpiredTime < DateTime.Now) 
+                    return new RefreshTokenResponse(false, "ExpiredTimeCookie");
+                account = await _context.Accounts.Where(x => x.UserName == refr.UserName).FirstOrDefaultAsync();
+            }
+            else
+            {
+                var principal = GetClaimsPrincipalFromExpiredToken(tokenDto.AccessToken);
 
-            var principal = GetClaimsPrincipalFromExpiredToken(tokenDto.AccessToken);
+                // Lấy thông tin Tài khoản
+                account = await _context.Accounts.Where(x => x.UserName == principal.Identity.Name).FirstOrDefaultAsync();
+            }
 
-            // Lấy thông tin Tài khoản
-            var account = await _context.Accounts.Where(x => x.UserName == principal.Identity.Name).FirstOrDefaultAsync();
+            // kiểm  tra refresh token || token còn hạn hay không ?
+            if (account == null) return new RefreshTokenResponse(false, "Unthorize");
 
-            // kiểm  tra refresh token || token còn hạn hay không ? 
-
-            return CreateToken(account, populateExp: false);
+            // Lấy thông tin Token
+            var token = CreateToken(account, populateExp: false);
+            return new RefreshTokenResponse(token) { IsSuccess = true };
         }
 
 
+        public void RemoveTokenInCookie(HttpContext context)
+        {
+            context.Request.Cookies.TryGetValue("X-Access-Token", out var accessToken);
+            context.Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+                context.Response.Cookies.Delete("X-Access-Token");
+            if (!string.IsNullOrWhiteSpace(refreshToken))
+                context.Response.Cookies.Delete("X-Refresh-Token");
+        }
+
+        /// <summary>
+        /// Thu hồi token
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns></returns>
+        public Task RevokeToken(string userName)
+        {
+            throw new NotImplementedException();
+        }
 
         public void SetTokensInsideCookie(TokenDto tokenDto, HttpContext context)
         {
-            context.Response.Cookies.Append("accessToken", tokenDto.AccessToken,
+            context.Response.Cookies.Append("X-Access-Token", tokenDto.AccessToken,
             new CookieOptions
             {
-                Expires = DateTimeOffset.UtcNow.AddMinutes(5),
+                Expires = DateTime.UtcNow.AddMinutes(5),
                 HttpOnly = true,
                 IsEssential = true,
                 Secure = true,
                 SameSite = SameSiteMode.None
             });
-            context.Response.Cookies.Append("refreshToken", tokenDto.RefreshToken,
+            context.Response.Cookies.Append("X-Refresh-Token", tokenDto.RefreshToken,
             new CookieOptions
             {
-                Expires = DateTimeOffset.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddDays(7),
                 HttpOnly = true,
                 IsEssential = true,
                 Secure = true,
@@ -152,15 +214,33 @@ namespace API._Services
             var account = await _context.Accounts.Where(x => x.UserName == user.UserName).FirstOrDefaultAsync();
             if (account == null) return new AuthenticationResponse() { IsAuthSuccessfully = false, ErrorMessage = "Tài khoản không tồn tại" };
 
+            var tokenDto = _jwtHandle.CreateToken(account);
+
+            var refreshToken = new RefreshToken()
+            {
+                UserName = account.UserName,
+                Token = tokenDto.RefreshToken,
+                CreatedTime = DateTime.Now,
+                ExpiredTime = DateTime.UtcNow.AddDays(7)
+            };
+
+            _context.RefreshToken.Add(refreshToken);
+            await _context.SaveChangesAsync();
+
             return new AuthenticationResponse()
             {
                 IsAuthSuccessfully = true,
                 ErrorMessage = "Đăng nhập thành công",
-                Token = _jwtHandle.CreateToken(account)
+                Token = tokenDto
             };
         }
 
 
+        /// <summary>
+        /// Lấy thông tin Claim từ Access Token
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         private ClaimsPrincipal GetClaimsPrincipalFromExpiredToken(string token)
         {
             var jwtSetting = _configuration.GetSection("JwtSettings");
@@ -177,15 +257,12 @@ namespace API._Services
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            SecurityToken securityToken;
-            var principal = tokenHandler.ValidateToken(token, TokenValidationParameters, out securityToken);
+            var principal = tokenHandler.ValidateToken(token, TokenValidationParameters, out SecurityToken securityToken);
             var JwtSecurityToken = securityToken as JwtSecurityToken;
 
 
             if (JwtSecurityToken is null || JwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-            {
                 throw new SecurityTokenException("Invlid Token");
-            }
 
             return principal;
         }
