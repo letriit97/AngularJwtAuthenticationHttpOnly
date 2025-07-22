@@ -12,7 +12,8 @@ export class HomeComponent implements OnInit {
 
   colors: string[] = [];
 
-  constructor(private router: Router,
+  constructor(
+    private router: Router,
     private _services: AuthenticaionService,
     private _dataServices: DataService
   ) { }

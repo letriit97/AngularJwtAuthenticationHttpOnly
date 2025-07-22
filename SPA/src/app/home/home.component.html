@@ -1,51 +1,21 @@
-<mat-drawer-container class="container-fluid m-0 p-0" [hasBackdrop]="true">
-    <mat-drawer #drawer mode="over">
-        <!-- Sidebar -->
-        <div class="d-flex flex-column justify-content-between h-full">
-            <mat-list>
-                <mat-list-item>Item 1</mat-list-item>
-                <mat-divider></mat-divider>
-                <mat-list-item>Item 2</mat-list-item>
-                <mat-divider></mat-divider>
-                <mat-list-item>Item 3</mat-list-item>
-            </mat-list>
-            
-            <button mat-stroked-button color="primary" (click)="logOut()">
-                Đăng xuất
-            </button>
-        </div>
-        
-        <!-- End Sidebar -->
-    </mat-drawer>
-    <mat-drawer-content>
-        <mat-toolbar color="primary">
-            <button mat-icon-button class="example-icon" (click)="drawer.toggle()">
-                <mat-icon>menu</mat-icon>
-            </button>
-            <!-- <span>My App</span> -->
-            
-        </mat-toolbar>
+<div class="p-5 pt-3">
 
-        <div class="p-5 pt-3">
+    <div class="d-flex flex-row gap-2 pt-5 pb-5">
+        <button mat-stroked-button color="primary" (click)="getData()">
+            Lấy dữ liệu từ API
+        </button>
 
-            <div class="d-flex flex-row gap-2 pt-5 pb-5">
-                <button mat-stroked-button color="primary" (click)="getData()">
-                    Lấy dữ liệu từ API
-                </button>
+        <button mat-stroked-button color="primary" (click)="logOut()">
+            Đăng xuất
+        </button>
+    </div>
 
-                <button mat-stroked-button color="primary" (click)="logOut()">
-                    Đăng xuất
-                </button>
-            </div>
-
-            <div>
-                <mat-form-field appearance="fill">
-                    <mat-label> {{ colors.length > 0 ? 'Danh sách dữ liệu': 'Chưa có dữ liệu'}} </mat-label>
-                    <mat-select>
-                        <mat-option *ngFor="let food of colors" [value]="food"> {{food}} </mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
-        </div>
-    </mat-drawer-content>
-</mat-drawer-container>
+    <div>
+        <mat-form-field appearance="fill">
+            <mat-label> {{ colors.length > 0 ? 'Danh sách dữ liệu': 'Chưa có dữ liệu'}} </mat-label>
+            <mat-select>
+                <mat-option *ngFor="let food of colors" [value]="food"> {{food}} </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+</div>

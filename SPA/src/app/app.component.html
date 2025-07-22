@@ -1,1 +1,82 @@
-<app-layout></app-layout>
+<mat-drawer-container class="container-fluid m-0 p-0 h-100" [hasBackdrop]="true">
+    <mat-drawer class="left-sidebar" #drawer mode="over">
+        <!-- Sidebar -->
+        <div class="d-flex flex-column justify-content-between h-100">
+            <div class="d-flex flex-column align-items-start ">
+                <button mat-button color="primary" class="w-100 text-start">
+                    SWAT
+                </button>
+                
+                <mat-accordion>
+                    <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                Menu Cấp 1
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <mat-list>
+                            <mat-list-item>Menu Item 1</mat-list-item>
+                            <mat-divider></mat-divider>
+                            <mat-list-item>Menu Item 2</mat-list-item>
+                            <mat-divider></mat-divider>
+                            <mat-list-item>Menu Item 3</mat-list-item>
+                        </mat-list>
+                    </mat-expansion-panel>
+
+                    <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                Menu Cấp 1
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <mat-list>
+                            <mat-list-item>Menu Item 1</mat-list-item>
+                            <mat-divider></mat-divider>
+                            <mat-list-item>Menu Item 2</mat-list-item>
+                            <mat-divider></mat-divider>
+                            <mat-list-item>Menu Item 3</mat-list-item>
+                        </mat-list>
+                    </mat-expansion-panel>
+
+                    <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                Menu Cấp 1
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <mat-list>
+                            <mat-list-item>
+                                Menu Item 1 Menu Item 1
+                            </mat-list-item>
+                            <mat-divider></mat-divider>
+                            <mat-list-item>Menu Item 2</mat-list-item>
+                            <mat-divider></mat-divider>
+                            <mat-list-item>Menu Item 3</mat-list-item>
+                        </mat-list>
+                    </mat-expansion-panel>
+
+                </mat-accordion>
+            </div>
+
+            <button mat-stroked-button color="primary">
+                <mat-icon class="me-2">logout</mat-icon>
+                Đăng xuất
+            </button>
+        </div>
+
+        <!-- End Sidebar -->
+    </mat-drawer>
+    <mat-drawer-content>
+        <mat-toolbar class="left-toolbar" color="primary">
+            <button mat-icon-button class="example-icon" (click)="drawer.toggle()">
+                <mat-icon>menu</mat-icon>
+                <span class="ms-2">SWAT</span>
+            </button>
+
+            <!-- Icons -->
+        </mat-toolbar>
+
+        <app-layout></app-layout>
+
+    </mat-drawer-content>
+</mat-drawer-container>
