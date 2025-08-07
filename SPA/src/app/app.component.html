@@ -1,3 +1,7 @@
+<mat-progress-bar [mode]="(progressBarService.isLoading$ | async) ? 'determinate' : 'determinate'"
+    [value]="progressBarService.progressValue$ | async"
+    *ngIf="progressBarService.isLoading$ | async"></mat-progress-bar>
+
 <mat-drawer-container class="container-fluid m-0 p-0 h-100" [hasBackdrop]="true">
     <mat-drawer class="left-sidebar" #drawer mode="over">
         <!-- Sidebar -->
@@ -58,7 +62,7 @@
                 </mat-accordion>
             </div>
 
-            <button mat-stroked-button color="primary">
+            <button mat-stroked-button color="primary" (click)="logOut()">
                 <mat-icon class="me-2">logout</mat-icon>
                 Đăng xuất
             </button>
@@ -68,7 +72,7 @@
     </mat-drawer>
     <mat-drawer-content>
         <mat-toolbar class="left-toolbar" color="primary">
-            <button mat-icon-button class="example-icon" (click)="drawer.toggle()">
+            <button mat-icon-button class="example-icon" (click)="onToggleSidebar()">
                 <mat-icon>menu</mat-icon>
                 <span class="ms-2">SWAT</span>
             </button>

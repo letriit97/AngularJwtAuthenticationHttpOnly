@@ -13,6 +13,7 @@ const routes: Routes = [
     children: [
       {
         path: '', // child route path
+        pathMatch: 'full',
         component: HomeComponent, // child route component that the router renders
       },
     ],
